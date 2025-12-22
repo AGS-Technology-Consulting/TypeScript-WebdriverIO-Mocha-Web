@@ -1,0 +1,92 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Check Formatting
+        run: npx prettier --check "src/**/*.ts" "config/**/*.ts"
+
+  type-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Type Check
+        run: npx tsc --noEmit
+  
+  smoke-tests:
+    name: Smoke Tests (Chrome)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Smoke Tests
+        run: HEADLESS=true npm run test:smoke
+        continue-on-error: true
+      
+      - name: Upload Screenshots on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-smoke-screenshots
+          path: screenshots/
+          retention-days: 7
+      
+      - name: Comment PR with Results
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const logContent = fs.existsSync('logs/combined.log') 
+              ? fs.readFileSync('logs/combined.log', 'utf8').slice(-1000)
+              : 'No logs available';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🧪 Smoke Test Results\n\n\`\`\`\n${logContent}\n\`\`\``
+            });
