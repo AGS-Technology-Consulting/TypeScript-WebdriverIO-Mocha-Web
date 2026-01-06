@@ -1,313 +1,313 @@
-name: Web Test Automation
+# name: Web Test Automation
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
-  workflow_dispatch:
-    inputs:
-      browser:
-        description: 'Browser to test'
-        required: true
-        default: 'chrome'
-        type: choice
-        options:
-          - chrome
-          - firefox
-          - edge
-          - all
-      tag:
-        description: 'Cucumber tag expression'
-        required: false
-        default: '@smoke'
-        type: string
-      headless:
-        description: 'Run in headless mode'
-        required: false
-        default: true
-        type: boolean
+# on:
+#   push:
+#     branches: [ main, develop ]
+#   pull_request:
+#     branches: [ main, develop ]
+#   schedule:
+#     # Run daily at 2 AM UTC
+#     - cron: '0 2 * * *'
+#   workflow_dispatch:
+#     inputs:
+#       browser:
+#         description: 'Browser to test'
+#         required: true
+#         default: 'chrome'
+#         type: choice
+#         options:
+#           - chrome
+#           - firefox
+#           - edge
+#           - all
+#       tag:
+#         description: 'Cucumber tag expression'
+#         required: false
+#         default: '@smoke'
+#         type: string
+#       headless:
+#         description: 'Run in headless mode'
+#         required: false
+#         default: true
+#         type: boolean
 
-env:
-  NODE_VERSION: '18'
+# env:
+#   NODE_VERSION: '18'
 
-jobs:
-  chrome-tests:
-    name: Chrome Tests
-    runs-on: ubuntu-latest
-    if: github.event.inputs.browser == 'chrome' || github.event.inputs.browser == 'all' || github.event.inputs.browser == ''
+# jobs:
+#   chrome-tests:
+#     name: Chrome Tests
+#     runs-on: ubuntu-latest
+#     if: github.event.inputs.browser == 'chrome' || github.event.inputs.browser == 'all' || github.event.inputs.browser == ''
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🧪 Run Chrome Tests
-        run: |
-          TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
-          HEADLESS="${{ github.event.inputs.headless || 'true' }}"
+#       - name: 🧪 Run Chrome Tests
+#         run: |
+#           TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
+#           HEADLESS="${{ github.event.inputs.headless || 'true' }}"
           
-          if [ "$HEADLESS" = "true" ]; then
-            export HEADLESS=true
-          fi
+#           if [ "$HEADLESS" = "true" ]; then
+#             export HEADLESS=true
+#           fi
           
-          npm run test:chrome -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
-        continue-on-error: true
+#           npm run test:chrome -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
+#         continue-on-error: true
       
-      - name: 📊 Generate Allure Report
-        if: always()
-        run: |
-          npm run report || true
+#       - name: 📊 Generate Allure Report
+#         if: always()
+#         run: |
+#           npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chrome-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: failure()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: chrome-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📋 Upload Test Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chrome-logs
-          path: logs/
-          retention-days: 7
+#       - name: 📋 Upload Test Logs
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: chrome-logs
+#           path: logs/
+#           retention-days: 7
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chrome-allure-results
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: chrome-allure-results
+#           path: allure-results/
+#           retention-days: 30
 
-  firefox-tests:
-    name: Firefox Tests
-    runs-on: ubuntu-latest
-    if: github.event.inputs.browser == 'firefox' || github.event.inputs.browser == 'all'
+#   firefox-tests:
+#     name: Firefox Tests
+#     runs-on: ubuntu-latest
+#     if: github.event.inputs.browser == 'firefox' || github.event.inputs.browser == 'all'
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🦊 Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+#       - name: 🦊 Setup Firefox
+#         uses: browser-actions/setup-firefox@latest
       
-      - name: 🧪 Run Firefox Tests
-        run: |
-          TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
-          HEADLESS="${{ github.event.inputs.headless || 'true' }}"
+#       - name: 🧪 Run Firefox Tests
+#         run: |
+#           TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
+#           HEADLESS="${{ github.event.inputs.headless || 'true' }}"
           
-          if [ "$HEADLESS" = "true" ]; then
-            export HEADLESS=true
-          fi
+#           if [ "$HEADLESS" = "true" ]; then
+#             export HEADLESS=true
+#           fi
           
-          npm run test:firefox -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
-        continue-on-error: true
+#           npm run test:firefox -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
+#         continue-on-error: true
       
-      - name: 📊 Generate Allure Report
-        if: always()
-        run: npm run report || true
+#       - name: 📊 Generate Allure Report
+#         if: always()
+#         run: npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firefox-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: failure()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: firefox-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📋 Upload Test Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firefox-logs
-          path: logs/
-          retention-days: 7
+#       - name: 📋 Upload Test Logs
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: firefox-logs
+#           path: logs/
+#           retention-days: 7
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: firefox-allure-results
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: firefox-allure-results
+#           path: allure-results/
+#           retention-days: 30
 
-  edge-tests:
-    name: Edge Tests
-    runs-on: ubuntu-latest
-    if: github.event.inputs.browser == 'edge' || github.event.inputs.browser == 'all'
+#   edge-tests:
+#     name: Edge Tests
+#     runs-on: ubuntu-latest
+#     if: github.event.inputs.browser == 'edge' || github.event.inputs.browser == 'all'
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🧪 Run Edge Tests
-        run: |
-          TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
-          HEADLESS="${{ github.event.inputs.headless || 'true' }}"
+#       - name: 🧪 Run Edge Tests
+#         run: |
+#           TAG_EXPRESSION="${{ github.event.inputs.tag || '@smoke' }}"
+#           HEADLESS="${{ github.event.inputs.headless || 'true' }}"
           
-          if [ "$HEADLESS" = "true" ]; then
-            export HEADLESS=true
-          fi
+#           if [ "$HEADLESS" = "true" ]; then
+#             export HEADLESS=true
+#           fi
           
-          npm run test:edge -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
-        continue-on-error: true
+#           npm run test:edge -- --cucumberOpts.tagExpression="$TAG_EXPRESSION"
+#         continue-on-error: true
       
-      - name: 📊 Generate Allure Report
-        if: always()
-        run: npm run report || true
+#       - name: 📊 Generate Allure Report
+#         if: always()
+#         run: npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: edge-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: failure()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: edge-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📋 Upload Test Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: edge-logs
-          path: logs/
-          retention-days: 7
+#       - name: 📋 Upload Test Logs
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: edge-logs
+#           path: logs/
+#           retention-days: 7
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: edge-allure-results
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: edge-allure-results
+#           path: allure-results/
+#           retention-days: 30
 
-  parallel-tests:
-    name: Parallel Browser Tests
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+#   parallel-tests:
+#     name: Parallel Browser Tests
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🦊 Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+#       - name: 🦊 Setup Firefox
+#         uses: browser-actions/setup-firefox@latest
       
-      - name: 🧪 Run Parallel Tests
-        run: npm run test:parallel
-        continue-on-error: true
+#       - name: 🧪 Run Parallel Tests
+#         run: npm run test:parallel
+#         continue-on-error: true
       
-      - name: 📊 Generate Allure Report
-        if: always()
-        run: npm run report || true
+#       - name: 📊 Generate Allure Report
+#         if: always()
+#         run: npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: parallel-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: failure()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: parallel-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: parallel-allure-results
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: parallel-allure-results
+#           path: allure-results/
+#           retention-days: 30
 
-  publish-report:
-    name: Publish Test Report
-    needs: [chrome-tests, firefox-tests, edge-tests]
-    runs-on: ubuntu-latest
-    if: always()
+#   publish-report:
+#     name: Publish Test Report
+#     needs: [chrome-tests, firefox-tests, edge-tests]
+#     runs-on: ubuntu-latest
+#     if: always()
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 📥 Download All Allure Results
-        uses: actions/download-artifact@v4
-        with:
-          pattern: '*-allure-results'
-          path: allure-results
-          merge-multiple: true
+#       - name: 📥 Download All Allure Results
+#         uses: actions/download-artifact@v4
+#         with:
+#           pattern: '*-allure-results'
+#           path: allure-results
+#           merge-multiple: true
       
-      - name: 📊 Generate Combined Allure Report
-        uses: simple-elf/allure-report-action@master
-        if: always()
-        with:
-          allure_results: allure-results
-          allure_history: allure-history
-          keep_reports: 20
+#       - name: 📊 Generate Combined Allure Report
+#         uses: simple-elf/allure-report-action@master
+#         if: always()
+#         with:
+#           allure_results: allure-results
+#           allure_history: allure-history
+#           keep_reports: 20
       
-      - name: 🚀 Deploy Report to GitHub Pages
-        if: always() && github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-history
+#       - name: 🚀 Deploy Report to GitHub Pages
+#         if: always() && github.ref == 'refs/heads/main'
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: allure-history
 
-  notify:
-    name: Send Notifications
-    needs: [chrome-tests, firefox-tests, edge-tests]
-    runs-on: ubuntu-latest
-    if: always()
+#   notify:
+#     name: Send Notifications
+#     needs: [chrome-tests, firefox-tests, edge-tests]
+#     runs-on: ubuntu-latest
+#     if: always()
     
-    steps:
-      - name: 📧 Send Slack Notification
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            Web Test Automation Results
-            Browser: ${{ github.event.inputs.browser || 'chrome' }}
-            Tag: ${{ github.event.inputs.tag || '@smoke' }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#     steps:
+#       - name: 📧 Send Slack Notification
+#         if: always()
+#         uses: 8398a7/action-slack@v3
+#         with:
+#           status: ${{ job.status }}
+#           text: |
+#             Web Test Automation Results
+#             Browser: ${{ github.event.inputs.browser || 'chrome' }}
+#             Tag: ${{ github.event.inputs.tag || '@smoke' }}
+#             Branch: ${{ github.ref }}
+#             Commit: ${{ github.sha }}
+#           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
