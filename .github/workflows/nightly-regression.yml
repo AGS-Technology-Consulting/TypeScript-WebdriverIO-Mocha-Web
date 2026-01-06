@@ -1,162 +1,162 @@
-name: Nightly Regression Tests
+# name: Nightly Regression Tests
 
-on:
-  schedule:
-    # Run every night at 1 AM UTC (Monday-Friday)
-    - cron: '0 1 * * 1-5'
-  workflow_dispatch:
+# on:
+#   schedule:
+#     # Run every night at 1 AM UTC (Monday-Friday)
+#     - cron: '0 1 * * 1-5'
+#   workflow_dispatch:
 
-env:
-  NODE_VERSION: '18'
-  HEADLESS: 'true'
+# env:
+#   NODE_VERSION: '18'
+#   HEADLESS: 'true'
 
-jobs:
-  regression-chrome:
-    name: Regression - Chrome
-    runs-on: ubuntu-latest
+# jobs:
+#   regression-chrome:
+#     name: Regression - Chrome
+#     runs-on: ubuntu-latest
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🧪 Run Regression Tests
-        run: HEADLESS=true npm run test:regression
-        continue-on-error: true
+#       - name: 🧪 Run Regression Tests
+#         run: HEADLESS=true npm run test:regression
+#         continue-on-error: true
       
-      - name: 📊 Generate Report
-        if: always()
-        run: npm run report || true
+#       - name: 📊 Generate Report
+#         if: always()
+#         run: npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-chrome-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: regression-chrome-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-chrome-allure
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: regression-chrome-allure
+#           path: allure-results/
+#           retention-days: 30
 
-  regression-firefox:
-    name: Regression - Firefox
-    runs-on: ubuntu-latest
+#   regression-firefox:
+#     name: Regression - Firefox
+#     runs-on: ubuntu-latest
     
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout Code
+#         uses: actions/checkout@v4
       
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 🔧 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
       
-      - name: 📦 Install Dependencies
-        run: npm ci
+#       - name: 📦 Install Dependencies
+#         run: npm ci
       
-      - name: 🦊 Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+#       - name: 🦊 Setup Firefox
+#         uses: browser-actions/setup-firefox@latest
       
-      - name: 🧪 Run Regression Tests
-        run: HEADLESS=true npm run test:firefox -- --cucumberOpts.tagExpression='@regression'
-        continue-on-error: true
+#       - name: 🧪 Run Regression Tests
+#         run: HEADLESS=true npm run test:firefox -- --cucumberOpts.tagExpression='@regression'
+#         continue-on-error: true
       
-      - name: 📊 Generate Report
-        if: always()
-        run: npm run report || true
+#       - name: 📊 Generate Report
+#         if: always()
+#         run: npm run report || true
       
-      - name: 📸 Upload Screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-firefox-screenshots
-          path: screenshots/
-          retention-days: 30
+#       - name: 📸 Upload Screenshots
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: regression-firefox-screenshots
+#           path: screenshots/
+#           retention-days: 30
       
-      - name: 📈 Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-firefox-allure
-          path: allure-results/
-          retention-days: 30
+#       - name: 📈 Upload Allure Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: regression-firefox-allure
+#           path: allure-results/
+#           retention-days: 30
 
-  publish-report:
-    name: Publish Regression Report
-    needs: [regression-chrome, regression-firefox]
-    runs-on: ubuntu-latest
-    if: always()
+#   publish-report:
+#     name: Publish Regression Report
+#     needs: [regression-chrome, regression-firefox]
+#     runs-on: ubuntu-latest
+#     if: always()
     
-    steps:
-      - name: 📥 Download Allure Results
-        uses: actions/download-artifact@v4
-        with:
-          pattern: 'regression-*-allure'
-          path: allure-results
-          merge-multiple: true
+#     steps:
+#       - name: 📥 Download Allure Results
+#         uses: actions/download-artifact@v4
+#         with:
+#           pattern: 'regression-*-allure'
+#           path: allure-results
+#           merge-multiple: true
       
-      - name: 📊 Generate Combined Report
-        uses: simple-elf/allure-report-action@master
-        with:
-          allure_results: allure-results
-          allure_history: allure-history
-          keep_reports: 30
+#       - name: 📊 Generate Combined Report
+#         uses: simple-elf/allure-report-action@master
+#         with:
+#           allure_results: allure-results
+#           allure_history: allure-history
+#           keep_reports: 30
       
-      - name: 🚀 Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-history
-          destination_dir: regression
+#       - name: 🚀 Deploy to GitHub Pages
+#         if: github.ref == 'refs/heads/main'
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: allure-history
+#           destination_dir: regression
 
-  notify:
-    name: Send Regression Report
-    needs: [regression-chrome, regression-firefox]
-    runs-on: ubuntu-latest
-    if: always()
+#   notify:
+#     name: Send Regression Report
+#     needs: [regression-chrome, regression-firefox]
+#     runs-on: ubuntu-latest
+#     if: always()
     
-    steps:
-      - name: 📧 Email Notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "🌙 Nightly Regression Test Results - ${{ github.run_number }}"
-          to: ${{ secrets.EMAIL_RECIPIENTS }}
-          from: GitHub Actions
-          html_body: |
-            <h2>Nightly Regression Test Results</h2>
-            <p><b>Run:</b> #${{ github.run_number }}</p>
-            <p><b>Date:</b> ${{ github.event.head_commit.timestamp }}</p>
-            <p><b>Repository:</b> ${{ github.repository }}</p>
-            <p><b>Branch:</b> ${{ github.ref_name }}</p>
-            <p><b>Report:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/regression">View Report</a></p>
+#     steps:
+#       - name: 📧 Email Notification
+#         uses: dawidd6/action-send-mail@v3
+#         with:
+#           server_address: smtp.gmail.com
+#           server_port: 465
+#           username: ${{ secrets.EMAIL_USERNAME }}
+#           password: ${{ secrets.EMAIL_PASSWORD }}
+#           subject: "🌙 Nightly Regression Test Results - ${{ github.run_number }}"
+#           to: ${{ secrets.EMAIL_RECIPIENTS }}
+#           from: GitHub Actions
+#           html_body: |
+#             <h2>Nightly Regression Test Results</h2>
+#             <p><b>Run:</b> #${{ github.run_number }}</p>
+#             <p><b>Date:</b> ${{ github.event.head_commit.timestamp }}</p>
+#             <p><b>Repository:</b> ${{ github.repository }}</p>
+#             <p><b>Branch:</b> ${{ github.ref_name }}</p>
+#             <p><b>Report:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/regression">View Report</a></p>
       
-      - name: 📱 Slack Notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            🌙 Nightly Regression Tests Completed
-            Run: #${{ github.run_number }}
-            Repository: ${{ github.repository }}
-            View Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/regression
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+#       - name: 📱 Slack Notification
+#         uses: 8398a7/action-slack@v3
+#         with:
+#           status: ${{ job.status }}
+#           text: |
+#             🌙 Nightly Regression Tests Completed
+#             Run: #${{ github.run_number }}
+#             Repository: ${{ github.repository }}
+#             View Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/regression
+#           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
